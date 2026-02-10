@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Trash2, Download, Printer, RotateCcw, FileText, 
   User, GraduationCap, Briefcase, Code, Award, Settings, 
-  CheckCircle2, ArrowLeft, Send, Sparkles, Layout, 
-  ChevronUp, ChevronDown, Palette, Type, AlignLeft
+  CheckCircle2, ArrowLeft, Send, Layout, ChevronUp, 
+  ChevronDown, Palette, Type, ExternalLink, Menu, X
 } from 'lucide-react';
 
-// --- Initial Pro Data ---
+// --- Initial Pro Data (Transcribed from your Image) ---
 const initialData = {
-  theme: 'ishika', // 'ishika' or 'minimal'
+  themeConfig: {
+    accentColor: '#1d4ed8', // Default Blue
+    fontSize: '10.5pt',
+    lineHeight: '1.4',
+  },
   personalInfo: {
     name: "ISHIKA RAWAT",
     email: "ishika.rawat@example.com",
@@ -18,56 +22,76 @@ const initialData = {
   },
   sections: [
     {
-      id: 'edu',
+      id: 'edu_1',
       title: 'EDUCATION',
       type: 'list',
       items: [
-        { id: 1, title: 'Master of Computer Application', subtitle: 'Vellore Institute of Technology', location: 'Bhopal, India', dates: 'June 2022 - Aug 2024', points: ['GPA: 8.06'] }
+        { id: 101, title: 'Master of Computer Application', subtitle: 'Vellore Institute of Technology', location: 'Bhopal, India', dates: 'June 2022 - Aug 2024', points: ['GPA: 8.06'] },
+        { id: 102, title: 'Bachelor of Science (HONORS) - Mathematics', subtitle: 'Barasat Govt. College', location: 'Kolkata, India', dates: 'June 2018 - Aug 2021', points: ['GPA: 8.70'] }
       ]
     },
     {
-      id: 'skills',
+      id: 'skills_1',
       title: 'SKILLS SUMMARY',
       type: 'skills',
       items: [
         { label: 'Languages', value: 'Python, SQL, JAVA' },
-        { label: 'Frameworks', value: 'Pandas, Numpy, Scikit-Learn' }
+        { label: 'Frameworks', value: 'Pandas, Numpy, Scikit-Learn, Matplotlib' },
+        { label: 'Tools', value: 'Power BI, Excel, PowerPoint, Tableau, MySQL, SQLite' },
+        { label: 'Platforms', value: 'PyCharm, Jupyter Notebook, VS Code, IntelliJ IDEA' },
+        { label: 'Soft Skills', value: 'Rapport Building, Stakeholder management, People Management' }
       ]
     },
     {
-      id: 'exp',
+      id: 'exp_1',
       title: 'WORK EXPERIENCE',
       type: 'list',
       items: [
-        { id: 2, title: 'BUSINESS ANALYST INTERN', subtitle: 'WS', link: 'LINK', location: '', dates: 'Jan 24 - Mar 24', points: ['Streamlined data collection and reporting procedures.'] }
+        { 
+          id: 201, 
+          title: 'BUSINESS ANALYST INTERN', 
+          subtitle: 'WS', 
+          link: 'LINK', 
+          location: '', 
+          dates: 'Jan 24 - Mar 24', 
+          points: [
+            'Streamlined data collection and reporting procedures, reducing processing time by 20%.',
+            'Implemented process improvements resulting in 15% increase in productivity.',
+            'Collaborated with 3+ cross-functional teams to ensure project alignment.'
+          ] 
+        }
       ]
     }
   ]
 };
 
+const ACCENT_COLORS = [
+  { name: 'Classic Blue', hex: '#1d4ed8' },
+  { name: 'Professional Black', hex: '#000000' },
+  { name: 'Emerald Green', hex: '#059669' },
+  { name: 'Ruby Red', hex: '#dc2626' },
+  { name: 'Slate Gray', hex: '#475569' },
+];
+
 export default function App() {
   const [data, setData] = useState(() => {
-    const saved = localStorage.getItem('resume_pro_engine_v1');
+    const saved = localStorage.getItem('resume_ishika_pro_v1');
     return saved ? JSON.parse(saved) : initialData;
   });
-  const [view, setView] = useState('builder'); // 'builder' or 'preview'
-  const [activeTab, setActiveTab] = useState('content'); // 'content' or 'design'
+  const [view, setView] = useState('form');
+  const [activeTab, setActiveTab] = useState('content');
 
   useEffect(() => {
-    localStorage.setItem('resume_pro_engine_v1', JSON.stringify(data));
+    localStorage.setItem('resume_ishika_pro_v1', JSON.stringify(data));
   }, [data]);
 
-  // --- Logic Handlers ---
-  const updatePersonal = (field, value) => {
+  // --- State Handlers ---
+  const updatePersonalInfo = (field, value) => {
     setData({ ...data, personalInfo: { ...data.personalInfo, [field]: value } });
   };
 
-  const moveSection = (index, direction) => {
-    const newSections = [...data.sections];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newSections.length) return;
-    [newSections[index], newSections[targetIndex]] = [newSections[targetIndex], newSections[index]];
-    setData({ ...data, sections: newSections });
+  const updateTheme = (field, value) => {
+    setData({ ...data, themeConfig: { ...data.themeConfig, [field]: value } });
   };
 
   const addSection = (type) => {
@@ -82,290 +106,329 @@ export default function App() {
     setData({ ...data, sections: [...data.sections, newSection] });
   };
 
-  const updateSection = (id, updatedFields) => {
-    setData({ ...data, sections: data.sections.map(s => s.id === id ? { ...s, ...updatedFields } : s) });
-  };
-
   const removeSection = (id) => {
     setData({ ...data, sections: data.sections.filter(s => s.id !== id) });
   };
 
+  const moveSection = (index, dir) => {
+    const newSections = [...data.sections];
+    const target = dir === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= newSections.length) return;
+    [newSections[index], newSections[target]] = [newSections[target], newSections[index]];
+    setData({ ...data, sections: newSections });
+  };
+
+  const updateSection = (id, fields) => {
+    setData({ ...data, sections: data.sections.map(s => s.id === id ? { ...s, ...fields } : s) });
+  };
+
+  const addListItem = (sId) => {
+    setData({ ...data, sections: data.sections.map(s => s.id === sId ? { 
+      ...s, items: [...s.items, { id: Date.now(), title: '', subtitle: '', link: '', dates: '', points: [''] }] 
+    } : s) });
+  };
+
   const handlePrint = () => window.print();
 
-  return (
-    <div className="min-h-screen bg-[#F1F5F9] font-sans text-slate-900">
-      
-      {/* --- BUILDER VIEW --- */}
-      {view === 'builder' && (
-        <div className="animate-in fade-in duration-500">
-          <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black">R</div>
-              <h1 className="font-bold text-slate-900 hidden sm:block">Pro Resume Desk</h1>
-            </div>
-            
-            <div className="flex gap-2">
-               <button 
-                onClick={() => setView('preview')}
-                className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-xl shadow-blue-100 flex items-center gap-2 hover:bg-blue-700 transition-all active:scale-95"
-              >
-                Generate Final <Send size={16} />
-              </button>
-            </div>
-          </nav>
+  const handleDownloadWord = () => {
+    const content = document.getElementById("resume-preview").innerHTML;
+    const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:'Arial';font-size:${data.themeConfig.fontSize};}</style></head><body>`;
+    const footer = "</body></html>";
+    const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${data.personalInfo.name}_Resume.doc`;
+    link.click();
+  };
 
-          <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-8 p-6 md:p-12">
+  // --- UI Components ---
+  const Field = ({ label, value, onChange, placeholder, type = "text" }) => (
+    <div className="flex flex-col gap-1.5 w-full">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+      <input 
+        type={type} 
+        value={value} 
+        onChange={e => onChange(e.target.value)} 
+        placeholder={placeholder}
+        className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+      />
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
+      
+      {/* --- HEADER --- */}
+      <nav className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50 px-6 py-4 flex justify-between items-center print:hidden">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xl">R</div>
+          <h1 className="font-bold text-slate-900 hidden sm:block uppercase tracking-tight">Resume Builder <span className="text-blue-600">Pro</span></h1>
+        </div>
+        <div className="flex items-center gap-3">
+           <button onClick={() => setView(view === 'form' ? 'preview' : 'form')} className="px-5 py-2 bg-slate-100 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200">
+             {view === 'form' ? 'Final Preview' : 'Back to Edit'}
+           </button>
+           {view === 'preview' && (
+             <>
+                <button onClick={handleDownloadWord} className="p-2.5 bg-white border rounded-xl text-slate-600 hover:bg-slate-50"><FileText size={20}/></button>
+                <button onClick={handlePrint} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700">Download PDF</button>
+             </>
+           )}
+        </div>
+      </nav>
+
+      <main className="max-w-6xl mx-auto p-4 md:p-10">
+        
+        {/* --- FORM VIEW --- */}
+        {view === 'form' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row gap-8">
             
-            {/* Sidebar Navigation */}
-            <aside className="lg:w-64 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0">
-               <button onClick={() => setActiveTab('content')} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'content' ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
-                 <AlignLeft size={18} /> Edit Content
+            {/* Control Sidebar */}
+            <aside className="w-full md:w-64 space-y-2">
+               <button onClick={() => setActiveTab('content')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-sm transition-all ${activeTab === 'content' ? 'bg-slate-900 text-white shadow-xl' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                 <Layout size={18}/> Content
                </button>
-               <button onClick={() => setActiveTab('design')} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'design' ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
-                 <Palette size={18} /> Design & Theme
+               <button onClick={() => setActiveTab('design')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-sm transition-all ${activeTab === 'design' ? 'bg-slate-900 text-white shadow-xl' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
+                 <Palette size={18}/> Design & Theme
                </button>
             </aside>
 
-            {/* Main Editor Area */}
-            <div className="flex-1 max-w-2xl">
+            {/* Main Workspace */}
+            <div className="flex-1 space-y-8">
               
               {activeTab === 'content' && (
-                <div className="space-y-8 animate-in slide-in-from-bottom-4">
-                  
+                <>
                   {/* Personal */}
-                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                      <User size={14} /> Personal Identity
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <label className="text-[10px] font-bold text-slate-400 ml-1">FULL NAME</label>
-                        <input className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none" value={data.personalInfo.name} onChange={e => updatePersonal('name', e.target.value)} />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-400 ml-1">EMAIL</label>
-                        <input className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl" value={data.personalInfo.email} onChange={e => updatePersonal('email', e.target.value)} />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-400 ml-1">MOBILE</label>
-                        <input className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl" value={data.personalInfo.mobile} onChange={e => updatePersonal('mobile', e.target.value)} />
-                      </div>
+                  <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
+                    <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2"><User size={16}/> Basic Profile</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <Field label="Full Name" value={data.personalInfo.name} onChange={v => updatePersonalInfo('name', v)} />
+                      <Field label="Email Address" value={data.personalInfo.email} onChange={v => updatePersonalInfo('email', v)} />
+                      <Field label="Mobile Number" value={data.personalInfo.mobile} onChange={v => updatePersonalInfo('mobile', v)} />
+                      <Field label="LinkedIn URL" value={data.personalInfo.linkedin} onChange={v => updatePersonalInfo('linkedin', v)} />
+                      <Field label="GitHub / Portfolio" value={data.personalInfo.github} onChange={v => updatePersonalInfo('github', v)} />
                     </div>
                   </div>
 
                   {/* Dynamic Sections */}
-                  {data.sections.map((section, idx) => (
-                    <div key={section.id} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 relative group">
+                  {data.sections.map((section, sIdx) => (
+                    <div key={section.id} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 relative group animate-in slide-in-from-left-4">
                       
-                      {/* Section Controls */}
+                      {/* Move Controls */}
                       <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all hidden lg:flex">
-                        <button onClick={() => moveSection(idx, 'up')} className="p-2 bg-white rounded-lg shadow-sm hover:bg-slate-50"><ChevronUp size={16}/></button>
-                        <button onClick={() => moveSection(idx, 'down')} className="p-2 bg-white rounded-lg shadow-sm hover:bg-slate-50"><ChevronDown size={16}/></button>
+                        <button onClick={() => moveSection(sIdx, 'up')} className="p-2 bg-white rounded-lg shadow-sm hover:bg-slate-50 border"><ChevronUp size={16}/></button>
+                        <button onClick={() => moveSection(sIdx, 'down')} className="p-2 bg-white rounded-lg shadow-sm hover:bg-slate-50 border"><ChevronDown size={16}/></button>
                       </div>
 
                       <div className="flex justify-between items-center mb-6">
-                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">{idx + 1}</div>
-                           <input 
-                            className="text-sm font-black uppercase tracking-widest text-slate-800 bg-transparent border-b border-dashed border-slate-200 focus:border-blue-500 outline-none" 
-                            value={section.title} 
-                            onChange={e => updateSection(section.id, { title: e.target.value })}
-                          />
-                         </div>
-                         <button onClick={() => removeSection(section.id)} className="text-slate-300 hover:text-red-500"><Trash2 size={18}/></button>
+                        <input 
+                          className="text-sm font-black text-slate-900 uppercase tracking-widest bg-transparent border-b border-dashed border-slate-200 focus:border-blue-500 outline-none pb-1"
+                          value={section.title}
+                          onChange={e => updateSection(section.id, { title: e.target.value })}
+                        />
+                        <button onClick={() => removeSection(section.id)} className="text-slate-300 hover:text-red-500"><Trash2 size={20}/></button>
                       </div>
 
+                      {/* List Type (Edu, Exp, Proj) */}
                       {section.type === 'list' && (
                         <div className="space-y-6">
                           {section.items.map((item, iIdx) => (
-                            <div key={item.id} className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
-                              <div className="grid grid-cols-2 gap-3">
-                                <input className="p-2 border rounded-lg text-sm" placeholder="Title (e.g. Job Role)" value={item.title} onChange={e => {
-                                  const items = [...section.items];
-                                  items[iIdx].title = e.target.value;
-                                  updateSection(section.id, { items });
-                                }} />
-                                <input className="p-2 border rounded-lg text-sm" placeholder="Subtitle (e.g. Company)" value={item.subtitle} onChange={e => {
-                                  const items = [...section.items];
-                                  items[iIdx].subtitle = e.target.value;
-                                  updateSection(section.id, { items });
-                                }} />
-                                <input className="p-2 border rounded-lg text-sm" placeholder="Dates" value={item.dates} onChange={e => {
-                                  const items = [...section.items];
-                                  items[iIdx].dates = e.target.value;
-                                  updateSection(section.id, { items });
-                                }} />
-                                <input className="p-2 border rounded-lg text-sm" placeholder="Link (Optional)" value={item.link} onChange={e => {
-                                  const items = [...section.items];
-                                  items[iIdx].link = e.target.value;
-                                  updateSection(section.id, { items });
-                                }} />
+                            <div key={item.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4 relative">
+                              <button onClick={() => {
+                                const newItems = section.items.filter(it => it.id !== item.id);
+                                updateSection(section.id, { items: newItems });
+                              }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Trash2 size={16}/></button>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Field label="Primary Title" value={item.title} onChange={v => {
+                                  const items = [...section.items]; items[iIdx].title = v; updateSection(section.id, { items });
+                                }} placeholder="e.g. Software Engineer" />
+                                <Field label="Secondary Title" value={item.subtitle} onChange={v => {
+                                  const items = [...section.items]; items[iIdx].subtitle = v; updateSection(section.id, { items });
+                                }} placeholder="e.g. Google" />
+                                <Field label="Dates" value={item.dates} onChange={v => {
+                                  const items = [...section.items]; items[iIdx].dates = v; updateSection(section.id, { items });
+                                }} placeholder="e.g. 2022 - Present" />
+                                <Field label="Link Text" value={item.link} onChange={v => {
+                                  const items = [...section.items]; items[iIdx].link = v; updateSection(section.id, { items });
+                                }} placeholder="e.g. LINK / CERTIFICATE" />
                               </div>
+
                               <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Detail Points</label>
                                 {item.points.map((p, pIdx) => (
                                   <div key={pIdx} className="flex gap-2">
-                                    <textarea className="flex-1 p-2 text-xs border rounded-lg h-12" value={p} onChange={e => {
-                                      const items = [...section.items];
-                                      items[iIdx].points[pIdx] = e.target.value;
-                                      updateSection(section.id, { items });
-                                    }} />
+                                    <textarea 
+                                      className="flex-1 p-3 bg-white border border-slate-200 rounded-xl text-sm h-14 resize-none"
+                                      value={p}
+                                      onChange={e => {
+                                        const items = [...section.items]; items[iIdx].points[pIdx] = e.target.value; updateSection(section.id, { items });
+                                      }}
+                                    />
                                     <button onClick={() => {
-                                      const items = [...section.items];
-                                      items[iIdx].points = items[iIdx].points.filter((_, idx) => idx !== pIdx);
-                                      updateSection(section.id, { items });
-                                    }} className="text-red-300 hover:text-red-500"><Trash2 size={14}/></button>
+                                      const items = [...section.items]; items[iIdx].points = items[iIdx].points.filter((_, idx) => idx !== pIdx); updateSection(section.id, { items });
+                                    }} className="text-slate-300 hover:text-red-400"><Trash2 size={16}/></button>
                                   </div>
                                 ))}
                                 <button onClick={() => {
-                                  const items = [...section.items];
-                                  items[iIdx].points.push("");
-                                  updateSection(section.id, { items });
-                                }} className="text-blue-600 text-[10px] font-bold">+ ADD BULLET POINT</button>
+                                  const items = [...section.items]; items[iIdx].points.push(""); updateSection(section.id, { items });
+                                }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest">+ Add Point</button>
                               </div>
                             </div>
                           ))}
-                          <button onClick={() => {
-                            const items = [...section.items, { id: Date.now(), title: '', subtitle: '', link: '', dates: '', points: [''] }];
-                            updateSection(section.id, { items });
-                          }} className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs">+ ADD ENTRY TO {section.title}</button>
+                          <button onClick={() => addListItem(section.id)} className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase hover:bg-slate-50 tracking-widest">+ Add Entry to {section.title}</button>
                         </div>
                       )}
 
+                      {/* Skills Type */}
                       {section.type === 'skills' && (
                         <div className="space-y-3">
                           {section.items.map((item, kIdx) => (
-                            <div key={kIdx} className="flex gap-2">
-                              <input className="w-1/3 p-2 border rounded-lg text-sm" placeholder="Label" value={item.label} onChange={e => {
-                                const items = [...section.items];
-                                items[kIdx].label = e.target.value;
-                                updateSection(section.id, { items });
+                            <div key={kIdx} className="flex gap-3">
+                              <input className="w-1/3 p-3 bg-slate-50 border rounded-xl text-sm" placeholder="Label" value={item.label} onChange={e => {
+                                const items = [...section.items]; items[kIdx].label = e.target.value; updateSection(section.id, { items });
                               }} />
-                              <input className="flex-1 p-2 border rounded-lg text-sm" placeholder="Values" value={item.value} onChange={e => {
-                                const items = [...section.items];
-                                items[kIdx].value = e.target.value;
-                                updateSection(section.id, { items });
+                              <input className="flex-1 p-3 bg-slate-50 border rounded-xl text-sm" placeholder="Values" value={item.value} onChange={e => {
+                                const items = [...section.items]; items[kIdx].value = e.target.value; updateSection(section.id, { items });
                               }} />
                               <button onClick={() => {
-                                const items = section.items.filter((_, idx) => idx !== kIdx);
-                                updateSection(section.id, { items });
-                              }}><Trash2 size={16} className="text-red-300"/></button>
+                                const items = section.items.filter((_, idx) => idx !== kIdx); updateSection(section.id, { items });
+                              }} className="text-slate-300 hover:text-red-400"><Trash2 size={16}/></button>
                             </div>
                           ))}
                           <button onClick={() => {
-                            const items = [...section.items, { label: '', value: '' }];
-                            updateSection(section.id, { items });
-                          }} className="text-blue-600 text-[10px] font-bold">+ ADD SKILL ROW</button>
+                            const items = [...section.items, { label: '', value: '' }]; updateSection(section.id, { items });
+                          }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest">+ Add Skill Category</button>
                         </div>
                       )}
                     </div>
                   ))}
 
-                  {/* Add Section UI */}
+                  {/* Add Global Section */}
                   <div className="bg-slate-900 p-8 rounded-[2rem] text-center space-y-4">
-                    <p className="text-slate-500 font-bold text-[10px] tracking-[0.3em]">NEW PARTITION</p>
-                    <div className="flex flex-wrap justify-center gap-3">
-                      <button onClick={() => addSection('list')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={14}/> Experience / Projects</button>
-                      <button onClick={() => addSection('skills')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={14}/> Skills Grid</button>
-                    </div>
+                     <p className="text-slate-500 font-bold text-[10px] tracking-[0.3em]">NEW PARTITION</p>
+                     <div className="flex flex-wrap justify-center gap-3">
+                       <button onClick={() => addSection('list')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={16}/> Experience / Projects / Education</button>
+                       <button onClick={() => addSection('skills')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={16}/> Skills Summary List</button>
+                     </div>
                   </div>
-                </div>
+                </>
               )}
 
               {activeTab === 'design' && (
-                <div className="animate-in slide-in-from-right-4 space-y-6">
-                  <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <h3 className="font-bold mb-6 flex items-center gap-2"><Palette size={20}/> Choose Theme</h3>
-                    <div className="grid grid-cols-1 gap-4">
-                      <button onClick={() => setData({...data, theme: 'ishika'})} className={`p-4 border-2 rounded-2xl flex items-center justify-between text-left transition-all ${data.theme === 'ishika' ? 'border-blue-600 bg-blue-50' : 'border-slate-100 hover:border-slate-200'}`}>
-                        <div>
-                          <p className="font-bold">Professional (Ishika Style)</p>
-                          <p className="text-xs text-slate-500">Bold lines, pipeline separators, and classic formatting.</p>
-                        </div>
-                        {data.theme === 'ishika' && <CheckCircle2 className="text-blue-600" />}
-                      </button>
-                      <button onClick={() => setData({...data, theme: 'minimal'})} className={`p-4 border-2 rounded-2xl flex items-center justify-between text-left transition-all ${data.theme === 'minimal' ? 'border-blue-600 bg-blue-50' : 'border-slate-100 hover:border-slate-200'}`}>
-                        <div>
-                          <p className="font-bold">Minimalist</p>
-                          <p className="text-xs text-slate-500">Cleaner whitespace, no lines, focused on typography.</p>
-                        </div>
-                        {data.theme === 'minimal' && <CheckCircle2 className="text-blue-600" />}
-                      </button>
+                <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 animate-in slide-in-from-right-4">
+                  <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2"><Palette size={16}/> Color Grading</h2>
+                  
+                  <div className="grid gap-6">
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 mb-3 block uppercase">Link & Line Accent Color</label>
+                      <div className="flex flex-wrap gap-4">
+                        {ACCENT_COLORS.map(color => (
+                          <button 
+                            key={color.hex} 
+                            onClick={() => updateTheme('accentColor', color.hex)}
+                            className={`w-12 h-12 rounded-full border-4 transition-all ${data.themeConfig.accentColor === color.hex ? 'border-blue-200 scale-110' : 'border-transparent'}`}
+                            style={{ backgroundColor: color.hex }}
+                            title={color.name}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t">
+                       <label className="text-xs font-bold text-slate-500 mb-2 block uppercase">Base Font Size (pt)</label>
+                       <select 
+                         value={data.themeConfig.fontSize}
+                         onChange={e => updateTheme('fontSize', e.target.value)}
+                         className="w-full p-3 bg-slate-50 border rounded-xl"
+                       >
+                         <option value="9pt">9pt (Compact)</option>
+                         <option value="10.5pt">10.5pt (Standard)</option>
+                         <option value="11pt">11pt (Readable)</option>
+                       </select>
                     </div>
                   </div>
                 </div>
               )}
+
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* --- PREVIEW VIEW --- */}
-      {view === 'preview' && (
-        <div className="bg-slate-900 min-h-screen">
-          <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50 print:hidden">
-            <button onClick={() => setView('builder')} className="flex items-center gap-2 font-bold text-xs text-slate-500 hover:text-slate-900 tracking-widest">
-              <ArrowLeft size={16}/> BACK TO BUILDER
-            </button>
-            <div className="flex gap-2">
-              <button onClick={handlePrint} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-xl flex items-center gap-2 hover:bg-black">
-                <Download size={18}/> SAVE AS PDF
-              </button>
-            </div>
-          </nav>
-
-          <div className="max-w-[210mm] mx-auto py-12 px-4 flex flex-col items-center">
-            
-            <div id="resume-preview" className={`bg-white p-[15mm] shadow-2xl print:shadow-none print:p-0 w-full ${data.theme === 'minimal' ? 'minimal-theme' : 'ishika-theme'}`}>
-               
+        {/* --- PREVIEW VIEW --- */}
+        {view === 'preview' && (
+          <div className="flex flex-col items-center py-10 animate-in zoom-in-95 duration-500">
+             
+             {/* THE ACTUAL RESUME CANVAS */}
+             <div 
+              id="resume-preview" 
+              className="bg-white shadow-2xl w-full max-w-[210mm] min-h-[297mm] p-[15mm] text-black print:shadow-none print:m-0"
+              style={{ 
+                fontFamily: "'Arial', sans-serif", 
+                fontSize: data.themeConfig.fontSize,
+                lineHeight: data.themeConfig.lineHeight
+              }}
+            >
                <style>{`
-                @media print { body { background: white; } .print\\:hidden { display: none; } #resume-preview { width: 100%; padding: 10mm; } @page { margin: 0; } }
-                #resume-preview { font-family: 'Arial', sans-serif; color: black; line-height: 1.4; }
-                
-                /* Ishika Theme Styles */
-                .ishika-theme .r-section-title { font-size: 11pt; font-weight: bold; border-bottom: 1.5px solid black; margin-top: 14pt; padding-bottom: 1pt; margin-bottom: 5pt; text-transform: uppercase; }
-                .ishika-theme .r-header { border-bottom: 2px solid black; padding-bottom: 8pt; margin-bottom: 2pt; }
-                
-                /* Minimal Theme Styles */
-                .minimal-theme .r-section-title { font-size: 11pt; font-weight: 800; color: #1e293b; margin-top: 18pt; margin-bottom: 8pt; text-transform: uppercase; letter-spacing: 0.05em; }
-                .minimal-theme .r-header { margin-bottom: 20pt; }
+                @media print { 
+                  body { background: white !important; } 
+                  .print\\:hidden { display: none !important; } 
+                  #resume-preview { width: 100% !important; padding: 10mm !important; box-shadow: none !important; margin: 0 !important; } 
+                  @page { margin: 0; size: auto; } 
+                }
+                #resume-preview h2 { 
+                  font-size: 11pt; 
+                  font-weight: bold; 
+                  text-transform: uppercase; 
+                  border-bottom: 1.5px solid black; 
+                  margin-top: 12pt; 
+                  margin-bottom: 4pt; 
+                  padding-bottom: 1pt; 
+                }
+                #resume-preview .link-text { color: ${data.themeConfig.accentColor}; font-weight: bold; font-size: 9pt; }
               `}</style>
 
               {/* Header */}
-              <div className="r-header flex justify-between items-start">
-                <div>
-                  <h1 className="text-[20pt] font-black leading-none mb-1">{data.personalInfo.name}</h1>
-                  <div className="text-[10pt] space-y-0.5 text-slate-700">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h1 className="text-[18pt] font-bold uppercase leading-none mb-1 text-black">{data.personalInfo.name}</h1>
+                  <div className="text-[10.5pt] text-slate-800 leading-tight space-y-0.5">
                     <p>Linkedin: {data.personalInfo.linkedin}</p>
-                    <p>GitHub: {data.personalInfo.github}</p>
+                    <p>GitHub/ Behance: {data.personalInfo.github}</p>
                   </div>
                 </div>
-                <div className="text-right text-[10pt] text-slate-700">
-                  <p>Email: <span className="font-bold text-black">{data.personalInfo.email}</span></p>
-                  <p className="mt-1">Mobile: <span className="font-bold text-black">{data.personalInfo.mobile}</span></p>
+                <div className="text-right text-[10.5pt] text-slate-800 leading-tight">
+                  <p>Email: <span className="font-bold">{data.personalInfo.email}</span></p>
+                  <p className="mt-1">Mobile: <span className="font-bold">{data.personalInfo.mobile}</span></p>
                 </div>
               </div>
 
-              {/* Render Sections */}
+              <hr className="border-t-[1.5px] border-black mt-2 mb-1" />
+
+              {/* Dynamic Sections Rendering */}
               {data.sections.map(section => (
-                <div key={section.id}>
-                  <h2 className="r-section-title">{section.title}</h2>
+                <div key={section.id} className="w-full">
+                  <h2>{section.title}</h2>
                   
                   {section.type === 'list' && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {section.items.map(item => (
-                        <div key={item.id} className="text-[10.5pt]">
-                          <div className="flex justify-between items-baseline">
+                        <div key={item.id} className="w-full">
+                          <div className="flex justify-between items-baseline w-full">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              {item.title && <span className="font-bold uppercase">{item.title}</span>}
-                              {item.title && item.subtitle && (data.theme === 'ishika' ? <span>|</span> : <span className="text-slate-300 text-xs">at</span>)}
-                              {item.subtitle && <span className="font-bold">{item.subtitle}</span>}
-                              {item.link && data.theme === 'ishika' && <span>|</span>}
-                              {item.link && <span className="text-blue-700 font-bold text-[9pt]">{item.link}</span>}
+                               {item.title && <span className="font-bold uppercase">{item.title}</span>}
+                               {item.title && item.subtitle && <span>|</span>}
+                               {item.subtitle && <span className="font-bold uppercase">{item.subtitle}</span>}
+                               {item.link && <span>|</span>}
+                               {item.link && <span className="link-text">{item.link}</span>}
                             </div>
                             {item.dates && <span className="font-bold italic whitespace-nowrap ml-4">{item.dates}</span>}
                           </div>
-                          <ul className="list-disc ml-5 mt-1 space-y-0.5">
-                            {item.points.map((p, idx) => p && <li key={idx} className="leading-tight pl-1">{p}</li>)}
+                          {item.location && <p className="italic text-slate-600 -mt-0.5">{item.location}</p>}
+                          <ul className="list-disc ml-5 mt-0.5 space-y-0.5">
+                            {item.points.map((p, pIdx) => p && (
+                              <li key={pIdx} className="pl-1 leading-snug">{p}</li>
+                            ))}
                           </ul>
                         </div>
                       ))}
@@ -373,24 +436,35 @@ export default function App() {
                   )}
 
                   {section.type === 'skills' && (
-                    <div className="text-[10.5pt] space-y-1 mt-1">
-                      {section.items.map((item, idx) => (
-                        <p key={idx}><span className="font-bold">• {item.label}:</span> {item.value}</p>
+                    <div className="space-y-0.5">
+                      {section.items.map((item, kIdx) => (
+                        <p key={kIdx} className="leading-snug">
+                          <span className="font-bold">• {item.label}:</span> {item.value}
+                        </p>
                       ))}
                     </div>
                   )}
                 </div>
               ))}
             </div>
-            
-            <div className="mt-10 mb-24 print:hidden text-center">
-               <button onClick={() => setView('builder')} className="text-slate-400 font-bold text-xs hover:text-white transition-colors">
-                 NEED TO CHANGE SOMETHING? GO BACK
-               </button>
+
+            <div className="mt-12 mb-24 print:hidden text-center">
+              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors font-bold text-xs mx-auto tracking-widest uppercase">
+                <RotateCcw size={16}/> Need adjustments? Back to Edit
+              </button>
             </div>
+
           </div>
         </div>
-      )}
+      </main>
+
+      {/* Global Print Styles Cleanup */}
+      <style>{`
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
     </div>
   );
 }
