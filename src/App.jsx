@@ -47,7 +47,7 @@ const initialData = {
         { label: 'Frameworks', value: 'Pandas, Numpy, Scikit-Learn, Matplotlib' },
         { label: 'Tools', value: 'Power BI, Excel, PowerPoint, Tableau, MySQL, SQLite' },
         { label: 'Platforms', value: 'PyCharm, Jupyter Notebook, VS Code, IntelliJ IDEA' },
-        { label: 'Soft Skills', value: 'Rapport Building, Stakeholder management, People Management' }
+        { label: 'Soft Skills', value: 'Rapport Building, Strong Stakeholder management, People Management' }
       ]
     },
     {
@@ -97,14 +97,14 @@ const Field = ({ label, value, onChange, placeholder, type = "text" }) => (
 // --- Main App ---
 export default function App() {
   const [data, setData] = useState(() => {
-    const saved = localStorage.getItem('resume_ishika_pro_v1');
+    const saved = localStorage.getItem('resume_ishika_pro_v2');
     return saved ? JSON.parse(saved) : initialData;
   });
   const [view, setView] = useState('form');
   const [activeTab, setActiveTab] = useState('content');
 
   useEffect(() => {
-    localStorage.setItem('resume_ishika_pro_v1', JSON.stringify(data));
+    localStorage.setItem('resume_ishika_pro_v2', JSON.stringify(data));
   }, [data]);
 
   const updatePersonalInfo = (field, value) => {
@@ -132,11 +132,13 @@ export default function App() {
   };
 
   const moveSection = (index, dir) => {
-    const newSections = [...data.sections];
-    const target = dir === 'up' ? index - 1 : index + 1;
-    if (target < 0 || target >= newSections.length) return;
-    [newSections[index], newSections[target]] = [newSections[target], newSections[index]];
-    setData(prev => ({ ...prev, sections: newSections }));
+    setData(prev => {
+      const newSections = [...prev.sections];
+      const target = dir === 'up' ? index - 1 : index + 1;
+      if (target < 0 || target >= newSections.length) return prev;
+      [newSections[index], newSections[target]] = [newSections[target], newSections[index]];
+      return { ...prev, sections: newSections };
+    });
   };
 
   const updateSection = (id, fields) => {
@@ -166,6 +168,7 @@ export default function App() {
     link.href = URL.createObjectURL(blob);
     link.download = `${data.personalInfo.name.replace(/\s+/g, '_')}_Resume.doc`;
     link.click();
+    URL.revokeObjectURL(link.href);
   };
 
   return (
@@ -182,10 +185,10 @@ export default function App() {
              {view === 'form' ? 'Final Preview' : 'Back to Edit'}
            </button>
            {view === 'preview' && (
-             <>
-                <button onClick={handleDownloadWord} className="p-2.5 bg-white border rounded-xl text-slate-600 hover:bg-slate-50"><FileText size={20}/></button>
-                <button onClick={handlePrint} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700">Download PDF</button>
-             </>
+             <div className="flex items-center gap-2">
+                <button onClick={handleDownloadWord} className="p-2.5 bg-white border rounded-xl text-slate-600 hover:bg-slate-50 transition-colors" title="Download Word"><FileText size={20}/></button>
+                <button onClick={handlePrint} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors">Download PDF</button>
+             </div>
            )}
         </div>
       </nav>
@@ -238,7 +241,7 @@ export default function App() {
                           value={section.title}
                           onChange={e => updateSection(section.id, { title: e.target.value })}
                         />
-                        <button onClick={() => removeSection(section.id)} className="text-slate-300 hover:text-red-500"><Trash2 size={20}/></button>
+                        <button onClick={() => removeSection(section.id)} className="text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={20}/></button>
                       </div>
 
                       {section.type === 'list' && (
@@ -248,7 +251,7 @@ export default function App() {
                               <button onClick={() => {
                                 const newItems = section.items.filter(it => it.id !== item.id);
                                 updateSection(section.id, { items: newItems });
-                              }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500"><Trash2 size={16}/></button>
+                              }} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
                               
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <Field label="Primary Title" value={item.title} onChange={v => {
@@ -287,18 +290,18 @@ export default function App() {
                                       const newPoints = item.points.filter((_, idx) => idx !== pIdx);
                                       const items = section.items.map((it, idx) => idx === iIdx ? { ...it, points: newPoints } : it);
                                       updateSection(section.id, { items });
-                                    }} className="text-slate-300 hover:text-red-400"><Trash2 size={16}/></button>
+                                    }} className="text-slate-300 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
                                   </div>
                                 ))}
                                 <button onClick={() => {
                                   const newPoints = [...item.points, ""];
                                   const items = section.items.map((it, idx) => idx === iIdx ? { ...it, points: newPoints } : it);
                                   updateSection(section.id, { items });
-                                }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest">+ Add Point</button>
+                                }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline transition-all">+ Add Point</button>
                               </div>
                             </div>
                           ))}
-                          <button onClick={() => addListItem(section.id)} className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase hover:bg-slate-50 tracking-widest">+ Add Entry to {section.title}</button>
+                          <button onClick={() => addListItem(section.id)} className="w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase hover:bg-slate-50 tracking-widest transition-all">+ Add Entry to {section.title}</button>
                         </div>
                       )}
 
@@ -317,13 +320,13 @@ export default function App() {
                               <button onClick={() => {
                                 const items = section.items.filter((_, idx) => idx !== kIdx);
                                 updateSection(section.id, { items });
-                              }} className="text-slate-300 hover:text-red-400"><Trash2 size={16}/></button>
+                              }} className="text-slate-300 hover:text-red-400 transition-colors"><Trash2 size={16}/></button>
                             </div>
                           ))}
                           <button onClick={() => {
                             const items = [...section.items, { label: '', value: '' }];
                             updateSection(section.id, { items });
-                          }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest">+ Add Skill Category</button>
+                          }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline transition-all">+ Add Skill Category</button>
                         </div>
                       )}
                     </div>
@@ -332,8 +335,8 @@ export default function App() {
                   <div className="bg-slate-900 p-8 rounded-[2rem] text-center space-y-4">
                      <p className="text-slate-500 font-bold text-[10px] tracking-[0.3em]">NEW PARTITION</p>
                      <div className="flex flex-wrap justify-center gap-3">
-                       <button onClick={() => addSection('list')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={16}/> Experience / Projects / Education</button>
-                       <button onClick={() => addSection('skills')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={16}/> Skills Summary List</button>
+                       <button onClick={() => addSection('list')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all"><Plus size={16}/> Experience / Projects / Education</button>
+                       <button onClick={() => addSection('skills')} className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all"><Plus size={16}/> Skills Summary List</button>
                      </div>
                   </div>
                 </>
@@ -468,7 +471,7 @@ export default function App() {
             </div>
 
             <div className="mt-12 mb-24 print:hidden text-center">
-              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors font-bold text-xs mx-auto tracking-widest uppercase">
+              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors font-bold text-xs mx-auto tracking-widest uppercase">
                 <RotateCcw size={16}/> Back to Edit
               </button>
             </div>
