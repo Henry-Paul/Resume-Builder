@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Trash2, Download, Printer, RotateCcw, FileText, 
   User, GraduationCap, Briefcase, Code, Award, Settings, 
-  CheckCircle2, ArrowLeft, Send
+  CheckCircle2, ArrowLeft, Send, Sparkles, Layout
 } from 'lucide-react';
 
 const initialData = {
@@ -27,8 +27,7 @@ const initialData = {
     languages: "Python, SQL, JAVA",
     frameworks: "Pandas, Numpy, Scikit-Learn, Matplotlib",
     tools: "Power BI, Excel, PowerPoint, Tableau, MySQL, SQLite",
-    platforms: "PyCharm, Jupyter Notebook, Visual Studio Code, IntelliJ IDEA",
-    softSkills: "Rapport Building, Strong Stakeholder management, People Management, Excellent communication"
+    softSkills: "Rapport Building, People Management, Excellent communication"
   },
   experience: [
     {
@@ -38,7 +37,7 @@ const initialData = {
       link: "LINK",
       dates: "January 24 - March 24",
       points: [
-        "Streamlined data collection and reporting procedures, reducing processing time by 20% enhancing efficiency.",
+        "Streamlined data collection and reporting procedures, reducing processing time by 20%.",
         "Implemented process improvements and automation solutions, resulting in 15% increase in productivity."
       ]
     }
@@ -50,7 +49,7 @@ const initialData = {
       link: "LINK",
       dates: "Dec 23 - Feb 2024",
       points: [
-        "Achieved a 96% accuracy rate in forecasting student academic performance by developing and deploying a machine learning model."
+        "Achieved a 96% accuracy rate in forecasting student academic performance."
       ]
     }
   ],
@@ -65,29 +64,31 @@ const initialData = {
   ]
 };
 
-// --- Atomic UI Components ---
+// --- Modern UI Components ---
 
 const FormCard = ({ title, icon: Icon, children }) => (
-  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-    <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-3">
-      <div className="p-2 bg-white rounded-lg shadow-sm text-slate-700">
-        <Icon size={20} />
+  <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden mb-8 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+    <div className="bg-slate-50/50 px-8 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="p-2.5 bg-white rounded-xl shadow-sm text-blue-600 border border-slate-100">
+          <Icon size={20} />
+        </div>
+        <h3 className="font-bold text-slate-800 uppercase tracking-widest text-xs">{title}</h3>
       </div>
-      <h3 className="font-bold text-slate-800 uppercase tracking-wider text-sm">{title}</h3>
     </div>
-    <div className="p-6">{children}</div>
+    <div className="p-8">{children}</div>
   </div>
 );
 
 const Input = ({ label, value, onChange, placeholder, className = "" }) => (
-  <div className={`flex flex-col gap-1.5 ${className}`}>
-    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+  <div className={`flex flex-col gap-2 ${className}`}>
+    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">{label}</label>
     <input
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+      className="px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300"
     />
   </div>
 );
@@ -101,31 +102,27 @@ const PreviewSectionTitle = ({ title }) => (
 
 export default function App() {
   const [data, setData] = useState(() => {
-    const saved = localStorage.getItem('resume_dedicated_v1');
+    const saved = localStorage.getItem('resume_pro_v1');
     return saved ? JSON.parse(saved) : initialData;
   });
 
-  const [view, setView] = useState('form'); // 'form' or 'resume'
+  const [view, setView] = useState('form');
 
   useEffect(() => {
-    localStorage.setItem('resume_dedicated_v1', JSON.stringify(data));
+    localStorage.setItem('resume_pro_v1', JSON.stringify(data));
   }, [data]);
 
   const handlePrint = () => window.print();
 
   const handleDownloadWord = () => {
     const content = document.getElementById("resume-preview").innerHTML;
-    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body>";
+    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:'Arial';font-size:10.5pt;}</style></head><body>";
     const footer = "</body></html>";
     const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `${data.personalInfo.name.replace(" ", "_")}_Resume.doc`;
     link.click();
-  };
-
-  const updateState = (section, field, value) => {
-    setData({ ...data, [section]: { ...data[section], [field]: value } });
   };
 
   const updateNested = (section, index, field, value) => {
@@ -142,62 +139,56 @@ export default function App() {
     setData({ ...data, [section]: data[section].filter(item => item.id !== id) });
   };
 
-  const updatePoint = (section, itemIdx, pointIdx, value) => {
-    const newList = [...data[section]];
-    newList[itemIdx].points[pointIdx] = value;
-    setData({ ...data, [section]: newList });
-  };
-
-  const addPoint = (section, index) => {
-    const newList = [...data[section]];
-    newList[index].points.push("");
-    setData({ ...data, [section]: newList });
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
       
-      {/* --- VIEW 1: THE INPUT FORM --- */}
+      {/* --- FORM VIEW --- */}
       {view === 'form' && (
-        <div className="animate-in fade-in duration-500">
-          <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 shadow-sm">
-            <div className="max-w-4xl mx-auto flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-bold">R</div>
-                <h1 className="font-bold text-slate-900 tracking-tight">Resume Desk</h1>
+        <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+          <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 px-6 py-4">
+            <div className="max-w-5xl mx-auto flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-800 to-black rounded-xl flex items-center justify-center text-white font-black text-xl shadow-xl shadow-slate-200">R</div>
+                <div>
+                  <h1 className="font-bold text-slate-900 tracking-tight leading-none">Resume Desk</h1>
+                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Professional Edition</p>
+                </div>
               </div>
               <button 
                 onClick={() => setView('resume')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-blue-100 flex items-center gap-2 hover:bg-blue-700 transition-all active:scale-95"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-2xl font-bold text-sm shadow-xl shadow-blue-200 flex items-center gap-2 transition-all active:scale-95 group"
               >
-                Generate Resume <Send size={16} />
+                Generate Resume <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </button>
             </div>
           </nav>
 
-          <div className="max-w-4xl mx-auto p-6 md:p-12">
-            <header className="mb-10">
-              <h2 className="text-3xl font-black text-slate-900 mb-2">Build Your Professional Resume</h2>
-              <p className="text-slate-500">Fill in your details below. We'll handle the formatting automatically.</p>
+          <div className="max-w-4xl mx-auto p-6 md:p-16">
+            <header className="mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-widest mb-4">
+                <Sparkles size={12} /> AI-Ready Formatting
+              </div>
+              <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Craft your narrative.</h2>
+              <p className="text-lg text-slate-500 max-w-xl leading-relaxed">Fill in your professional details below. Our engine will transform them into the industry-standard Ishika layout.</p>
             </header>
 
             <FormCard title="Personal Profile" icon={User}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <Input label="Full Name" value={data.personalInfo.name} onChange={(v) => updateState('personalInfo', 'name', v)} className="md:col-span-2" />
-                <Input label="Email" value={data.personalInfo.email} onChange={(v) => updateState('personalInfo', 'email', v)} />
-                <Input label="Mobile" value={data.personalInfo.mobile} onChange={(v) => updateState('personalInfo', 'mobile', v)} />
-                <Input label="LinkedIn" value={data.personalInfo.linkedin} onChange={(v) => updateState('personalInfo', 'linkedin', v)} />
-                <Input label="GitHub" value={data.personalInfo.github} onChange={(v) => updateState('personalInfo', 'github', v)} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input label="Full Name" value={data.personalInfo.name} onChange={(v) => setData({...data, personalInfo: {...data.personalInfo, name: v}})} className="md:col-span-2" />
+                <Input label="Email Address" value={data.personalInfo.email} onChange={(v) => setData({...data, personalInfo: {...data.personalInfo, email: v}})} />
+                <Input label="Mobile Number" value={data.personalInfo.mobile} onChange={(v) => setData({...data, personalInfo: {...data.personalInfo, mobile: v}})} />
+                <Input label="LinkedIn Username" value={data.personalInfo.linkedin} onChange={(v) => setData({...data, personalInfo: {...data.personalInfo, linkedin: v}})} />
+                <Input label="GitHub / Portfolio" value={data.personalInfo.github} onChange={(v) => setData({...data, personalInfo: {...data.personalInfo, github: v}})} />
               </div>
             </FormCard>
 
-            <FormCard title="Education" icon={GraduationCap}>
+            <FormCard title="Education History" icon={GraduationCap}>
               {data.education.map((edu, idx) => (
-                <div key={edu.id} className="mb-8 last:mb-0 p-5 bg-slate-50/50 rounded-2xl border border-slate-100 relative group">
-                  <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"><Trash2 size={18}/></button>
-                  <div className="grid gap-5">
+                <div key={edu.id} className="mb-10 last:mb-0 p-6 bg-slate-50 border border-slate-100 rounded-3xl relative group">
+                  <button onClick={() => removeItem('education', edu.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={20}/></button>
+                  <div className="grid gap-6">
                     <Input label="Institution" value={edu.institution} onChange={(v) => updateNested('education', idx, 'institution', v)} />
-                    <Input label="Degree & GPA" value={edu.degree} onChange={(v) => updateNested('education', idx, 'degree', v)} />
+                    <Input label="Degree & Grade" value={edu.degree} onChange={(v) => updateNested('education', idx, 'degree', v)} />
                     <div className="grid grid-cols-2 gap-4">
                        <Input label="Location" value={edu.location} onChange={(v) => updateNested('education', idx, 'location', v)} />
                        <Input label="Dates" value={edu.dates} onChange={(v) => updateNested('education', idx, 'dates', v)} />
@@ -205,86 +196,64 @@ export default function App() {
                   </div>
                 </div>
               ))}
-              <button onClick={() => addItem('education', { institution: "", degree: "", location: "", dates: "" })} className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs tracking-widest hover:border-blue-400 hover:text-blue-500 transition-all">+ ADD EDUCATION</button>
+              <button onClick={() => addItem('education', { institution: "", degree: "", location: "", dates: "" })} className="w-full py-5 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 font-bold text-xs tracking-widest hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50 transition-all">+ ADD EDUCATION</button>
             </FormCard>
 
-            <FormCard title="Skills Summary" icon={Settings}>
-              <div className="grid gap-5">
-                <Input label="Languages" value={data.skills.languages} onChange={(v) => setData({...data, skills: {...data.skills, languages: v}})} />
-                <Input label="Frameworks" value={data.skills.frameworks} onChange={(v) => setData({...data, skills: {...data.skills, frameworks: v}})} />
-                <Input label="Tools" value={data.skills.tools} onChange={(v) => setData({...data, skills: {...data.skills, tools: v}})} />
+            <FormCard title="Technical Arsenal" icon={Settings}>
+              <div className="grid gap-6">
+                <Input label="Programming Languages" value={data.skills.languages} onChange={(v) => setData({...data, skills: {...data.skills, languages: v}})} />
+                <Input label="Frameworks & Libraries" value={data.skills.frameworks} onChange={(v) => setData({...data, skills: {...data.skills, frameworks: v}})} />
+                <Input label="Tools & Platforms" value={data.skills.tools} onChange={(v) => setData({...data, skills: {...data.skills, tools: v}})} />
                 <Input label="Soft Skills" value={data.skills.softSkills} onChange={(v) => setData({...data, skills: {...data.skills, softSkills: v}})} />
               </div>
             </FormCard>
 
-            <FormCard title="Work Experience" icon={Briefcase}>
-              {data.experience.map((exp, idx) => (
-                <div key={exp.id} className="mb-8 last:mb-0 p-6 bg-slate-50/50 rounded-2xl border border-slate-100 relative group">
-                  <button onClick={() => removeItem('experience', exp.id)} className="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100"><Trash2 size={18}/></button>
-                  <div className="grid gap-5">
-                    <Input label="Job Role" value={exp.role} onChange={(v) => updateNested('experience', idx, 'role', v)} />
-                    <Input label="Company" value={exp.company} onChange={(v) => updateNested('experience', idx, 'company', v)} />
-                    <div className="grid grid-cols-2 gap-4">
-                       <Input label="Dates" value={exp.dates} onChange={(v) => updateNested('experience', idx, 'dates', v)} />
-                       <Input label="Link Text" value={exp.link} onChange={(v) => updateNested('experience', idx, 'link', v)} />
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Job Responsibilities</label>
-                      {exp.points.map((p, pIdx) => (
-                        <textarea 
-                          key={pIdx}
-                          value={p} 
-                          onChange={(e) => updatePoint('experience', idx, pIdx, e.target.value)}
-                          className="w-full text-sm p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none bg-white"
-                          placeholder="Example: Managed 5+ projects..."
-                        />
-                      ))}
-                      <button onClick={() => addPoint('experience', idx)} className="text-xs font-bold text-blue-600 hover:underline">+ Add Responsibility Point</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button onClick={() => addItem('experience', { role: "", company: "", link: "LINK", dates: "", points: [""] })} className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs tracking-widest">+ ADD WORK EXPERIENCE</button>
-            </FormCard>
-
-            <div className="flex justify-center mt-12 mb-20">
+            <div className="flex justify-center mt-12 mb-32">
               <button 
                 onClick={() => setView('resume')}
-                className="bg-blue-600 text-white px-10 py-4 rounded-full font-black text-lg shadow-2xl shadow-blue-200 flex items-center gap-3 hover:bg-blue-700 transition-all hover:-translate-y-1 active:scale-95"
+                className="group relative bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-xl shadow-2xl shadow-slate-300 transition-all hover:-translate-y-1 active:scale-95 overflow-hidden"
               >
-                Generate Final Resume <CheckCircle2 />
+                <div className="relative z-10 flex items-center gap-3">
+                  Generate Final Resume <CheckCircle2 className="text-blue-400" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- VIEW 2: THE FINAL RESUME PREVIEW --- */}
+      {/* --- RESUME PREVIEW VIEW --- */}
       {view === 'resume' && (
-        <div className="animate-in slide-in-from-bottom-5 duration-500 bg-slate-900 min-h-screen">
-          <nav className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50 px-6 py-4 print:hidden">
+        <div className="animate-in zoom-in-95 duration-500 bg-slate-100 min-h-screen">
+          <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 print:hidden">
             <div className="max-w-5xl mx-auto flex justify-between items-center">
-              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold text-sm">
-                <ArrowLeft size={18} /> BACK TO EDIT
+              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold text-xs tracking-widest">
+                <ArrowLeft size={16} /> BACK TO DESK
               </button>
               <div className="flex gap-3">
-                <button onClick={handleDownloadWord} className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2">
-                  <FileText size={18} /> DOWNLOAD WORD
+                <button onClick={handleDownloadWord} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all">
+                  <FileText size={18} /> WORD
                 </button>
-                <button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-blue-900/50">
+                <button onClick={handlePrint} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-xl shadow-slate-200 transition-all">
                   <Download size={18} /> DOWNLOAD PDF
                 </button>
               </div>
             </div>
           </nav>
 
-          <div className="max-w-[210mm] mx-auto py-10 px-4 flex flex-col items-center">
-             <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-6 print:hidden">Document Preview (A4 Format)</p>
+          <div className="max-w-[210mm] mx-auto py-12 px-4 flex flex-col items-center">
+             <div className="w-full flex justify-between items-center mb-6 print:hidden">
+                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                   <Layout size={14} /> Official A4 Preview
+                </div>
+                <div className="h-[1px] flex-1 mx-4 bg-slate-200"></div>
+                <div className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">Pixel Perfect</div>
+             </div>
              
-             {/* THE ACTUAL RESUME FOR PRINTING */}
              <div 
               id="resume-preview" 
-              className="bg-white shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] w-full p-[15mm] text-black print:shadow-none print:m-0"
+              className="bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] w-full p-[15mm] text-black print:shadow-none print:m-0"
               style={{ fontFamily: "'Arial', sans-serif" }}
             >
               <style>{`
@@ -292,7 +261,7 @@ export default function App() {
                   body { background: white !important; }
                   .print\\:hidden { display: none !important; }
                   #resume-preview { width: 100% !important; padding: 10mm !important; box-shadow: none !important; margin: 0 !important; }
-                  @page { margin: 0; size: auto; }
+                  @page { margin: 0; }
                 }
               `}</style>
 
@@ -392,10 +361,9 @@ export default function App() {
               </div>
             </div>
             
-            <div className="mt-10 mb-20 text-center print:hidden">
-              <p className="text-slate-400 text-sm">Need to change something?</p>
-              <button onClick={() => setView('form')} className="mt-2 text-white font-bold hover:underline decoration-blue-500 underline-offset-4 flex items-center gap-2 mx-auto justify-center">
-                 <ArrowLeft size={16}/> Go back to Editor
+            <div className="mt-12 mb-24 print:hidden">
+              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold text-xs mx-auto">
+                <RotateCcw size={14} /> RESET OR EDIT DETAILS
               </button>
             </div>
           </div>
