@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Plus, Trash2, Download, Eye, Edit2, Github, Linkedin, Mail, Phone, ExternalLink, Printer } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, Download, Printer, Save, RotateCcw, FileText } from 'lucide-react';
 
 // --- Initial Data (From the Image) ---
 const initialData = {
@@ -7,8 +7,8 @@ const initialData = {
     name: "ISHIKA RAWAT",
     email: "ishika.rawat@example.com",
     mobile: "+91 960000000",
-    linkedin: "[linkedin.com/in/ishika](https://linkedin.com/in/ishika)",
-    github: "[github.com/ishika](https://github.com/ishika)",
+    linkedin: "linkedin.com/in/ishika",
+    github: "github.com/ishika",
     behance: "behance.net/ishika"
   },
   education: [
@@ -166,11 +166,58 @@ const BulletInput = ({ points, onChange }) => {
 // --- Main Application ---
 
 export default function ResumeApp() {
-  const [data, setData] = useState(initialData);
-  const [activeTab, setActiveTab] = useState('edit'); // 'edit' or 'preview' (for mobile)
-  
+  // Load initial state from LocalStorage if available, else use default
+  const [data, setData] = useState(() => {
+    const saved = localStorage.getItem('resumeData');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return initialData;
+      }
+    }
+    return initialData;
+  });
+
+  const [activeTab, setActiveTab] = useState('edit');
+
+  // Save to LocalStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('resumeData', JSON.stringify(data));
+  }, [data]);
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadWord = () => {
+    const content = document.getElementById("resume-preview").innerHTML;
+    // Basic wrapper with some default styles to make it readable in Word
+    const preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Resume</title><style>body{font-family: 'Arial', sans-serif; font-size: 11pt;} h1{font-size: 16pt; text-transform: uppercase;} h2{font-size: 11pt; text-transform: uppercase; border-bottom: 1px solid #000;}</style></head><body>";
+    const postHtml = "</body></html>";
+    const html = preHtml + content + postHtml;
+
+    const url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+    const filename = 'resume.doc';
+    const downloadLink = document.createElement("a");
+
+    document.body.appendChild(downloadLink);
+    
+    if(navigator.msSaveOrOpenBlob ){
+        navigator.msSaveOrOpenBlob(new Blob(['\ufeff', html], { type: 'application/msword'}), filename);
+    } else {
+        downloadLink.href = url;
+        downloadLink.download = filename;
+        downloadLink.click();
+    }
+    document.body.removeChild(downloadLink);
+  };
+
+  const handleReset = () => {
+    if (confirm("Are you sure you want to reset all data to the template default? This cannot be undone.")) {
+      setData(initialData);
+      localStorage.removeItem('resumeData');
+    }
   };
 
   const updateNestedState = (section, index, field, value) => {
@@ -228,28 +275,53 @@ export default function ResumeApp() {
       
       {/* Navbar - Hidden on Print */}
       <nav className="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md print:hidden">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
             <h1 className="text-xl font-bold tracking-tight">Resume<span className="text-blue-400">Builder</span></h1>
+            <span className="text-xs bg-green-600 px-2 py-0.5 rounded ml-2">Auto-Save On</span>
+             {/* Mobile Reset Button */}
+             <button 
+              onClick={handleReset}
+              className="md:hidden px-2 py-1 rounded text-xs bg-red-800 hover:bg-red-700 flex items-center gap-1"
+            >
+              <RotateCcw size={12} /> Reset
+            </button>
           </div>
-          <div className="flex gap-3">
+          
+          <div className="flex flex-wrap gap-2 justify-center md:justify-end w-full md:w-auto">
+             <button 
+              onClick={handleReset}
+              className="hidden md:flex px-3 py-1.5 rounded text-sm bg-red-800 hover:bg-red-700 items-center gap-1"
+            >
+              <RotateCcw size={14} /> Reset
+            </button>
             <button 
               onClick={() => setActiveTab('edit')}
-              className={`md:hidden px-3 py-1.5 rounded text-sm ${activeTab === 'edit' ? 'bg-blue-600' : 'bg-slate-800'}`}
+              className={`md:hidden px-4 py-2 rounded text-sm ${activeTab === 'edit' ? 'bg-blue-600' : 'bg-slate-800'}`}
             >
               Edit
             </button>
             <button 
               onClick={() => setActiveTab('preview')}
-              className={`md:hidden px-3 py-1.5 rounded text-sm ${activeTab === 'preview' ? 'bg-blue-600' : 'bg-slate-800'}`}
+              className={`md:hidden px-4 py-2 rounded text-sm ${activeTab === 'preview' ? 'bg-blue-600' : 'bg-slate-800'}`}
             >
               Preview
             </button>
+
+            {/* Desktop & Mobile Actions */}
+             <button 
+              onClick={handleDownloadWord} 
+              className="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+              title="Download editable Word file"
+            >
+              <FileText size={16} /> <span>Word</span>
+            </button>
+
             <button 
               onClick={handlePrint} 
-              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+              className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <Download size={16} /> <span className="hidden sm:inline">Download PDF</span>
+              <Download size={16} /> <span>PDF</span>
             </button>
           </div>
         </div>
@@ -563,13 +635,18 @@ export default function ResumeApp() {
               </div>
             </div>
             
-            <div className="mt-8 text-center print:hidden">
-                <p className="text-sm text-gray-500 mb-2">Looks good?</p>
+            <div className="mt-8 text-center print:hidden flex justify-center gap-4">
+                 <button 
+                  onClick={handleDownloadWord} 
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-2 font-medium"
+                >
+                  <FileText size={18} /> Download Word
+                </button>
                 <button 
                   onClick={handlePrint}
-                  className="bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg hover:bg-gray-800 transition-transform active:scale-95 flex items-center gap-2 mx-auto font-medium"
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-2 font-medium"
                 >
-                  <Printer size={18} /> Print / Save as PDF
+                  <Download size={18} /> Download PDF
                 </button>
             </div>
 
@@ -580,3 +657,5 @@ export default function ResumeApp() {
     </div>
   );
 }
+
+
