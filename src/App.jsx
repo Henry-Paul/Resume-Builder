@@ -6,10 +6,18 @@ import {
   ChevronDown, Palette, Type, ExternalLink, Menu, X
 } from 'lucide-react';
 
-// --- Initial Pro Data (Transcribed from your Image) ---
+// --- Constants ---
+const ACCENT_COLORS = [
+  { name: 'Classic Blue', hex: '#1d4ed8' },
+  { name: 'Professional Black', hex: '#000000' },
+  { name: 'Emerald Green', hex: '#059669' },
+  { name: 'Ruby Red', hex: '#dc2626' },
+  { name: 'Slate Gray', hex: '#475569' },
+];
+
 const initialData = {
   themeConfig: {
-    accentColor: '#1d4ed8', // Default Blue
+    accentColor: '#1d4ed8', 
     fontSize: '10.5pt',
     lineHeight: '1.4',
   },
@@ -65,14 +73,28 @@ const initialData = {
   ]
 };
 
-const ACCENT_COLORS = [
-  { name: 'Classic Blue', hex: '#1d4ed8' },
-  { name: 'Professional Black', hex: '#000000' },
-  { name: 'Emerald Green', hex: '#059669' },
-  { name: 'Ruby Red', hex: '#dc2626' },
-  { name: 'Slate Gray', hex: '#475569' },
-];
+// --- Helper Components ---
+const PreviewSectionTitle = ({ title }) => (
+  <div className="w-full mb-1 mt-4">
+    <h2 className="font-bold uppercase tracking-tight text-black text-[11pt] mb-0.5">{title}</h2>
+    <div className="border-b-[1.5px] border-black w-full"></div>
+  </div>
+);
 
+const Field = ({ label, value, onChange, placeholder, type = "text" }) => (
+  <div className="flex flex-col gap-1.5 w-full">
+    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+    <input 
+      type={type} 
+      value={value} 
+      onChange={e => onChange(e.target.value)} 
+      placeholder={placeholder}
+      className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+    />
+  </div>
+);
+
+// --- Main App ---
 export default function App() {
   const [data, setData] = useState(() => {
     const saved = localStorage.getItem('resume_ishika_pro_v1');
@@ -85,13 +107,12 @@ export default function App() {
     localStorage.setItem('resume_ishika_pro_v1', JSON.stringify(data));
   }, [data]);
 
-  // --- State Handlers ---
   const updatePersonalInfo = (field, value) => {
-    setData({ ...data, personalInfo: { ...data.personalInfo, [field]: value } });
+    setData(prev => ({ ...prev, personalInfo: { ...prev.personalInfo, [field]: value } }));
   };
 
   const updateTheme = (field, value) => {
-    setData({ ...data, themeConfig: { ...data.themeConfig, [field]: value } });
+    setData(prev => ({ ...prev, themeConfig: { ...prev.themeConfig, [field]: value } }));
   };
 
   const addSection = (type) => {
@@ -103,11 +124,11 @@ export default function App() {
         ? [{ id: Date.now(), title: '', subtitle: '', link: '', dates: '', points: [''] }] 
         : [{ label: '', value: '' }]
     };
-    setData({ ...data, sections: [...data.sections, newSection] });
+    setData(prev => ({ ...prev, sections: [...prev.sections, newSection] }));
   };
 
   const removeSection = (id) => {
-    setData({ ...data, sections: data.sections.filter(s => s.id !== id) });
+    setData(prev => ({ ...prev, sections: prev.sections.filter(s => s.id !== id) }));
   };
 
   const moveSection = (index, dir) => {
@@ -115,45 +136,37 @@ export default function App() {
     const target = dir === 'up' ? index - 1 : index + 1;
     if (target < 0 || target >= newSections.length) return;
     [newSections[index], newSections[target]] = [newSections[target], newSections[index]];
-    setData({ ...data, sections: newSections });
+    setData(prev => ({ ...prev, sections: newSections }));
   };
 
   const updateSection = (id, fields) => {
-    setData({ ...data, sections: data.sections.map(s => s.id === id ? { ...s, ...fields } : s) });
+    setData(prev => ({ 
+      ...prev, 
+      sections: prev.sections.map(s => s.id === id ? { ...s, ...fields } : s) 
+    }));
   };
 
   const addListItem = (sId) => {
-    setData({ ...data, sections: data.sections.map(s => s.id === sId ? { 
-      ...s, items: [...s.items, { id: Date.now(), title: '', subtitle: '', link: '', dates: '', points: [''] }] 
-    } : s) });
+    setData(prev => ({
+      ...prev,
+      sections: prev.sections.map(s => s.id === sId ? { 
+        ...s, items: [...s.items, { id: Date.now(), title: '', subtitle: '', link: '', dates: '', points: [''] }] 
+      } : s)
+    }));
   };
 
   const handlePrint = () => window.print();
 
   const handleDownloadWord = () => {
-    const content = document.getElementById("resume-preview").innerHTML;
+    const content = document.getElementById("resume-preview")?.innerHTML || "";
     const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:'Arial';font-size:${data.themeConfig.fontSize};}</style></head><body>`;
     const footer = "</body></html>";
     const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${data.personalInfo.name}_Resume.doc`;
+    link.download = `${data.personalInfo.name.replace(/\s+/g, '_')}_Resume.doc`;
     link.click();
   };
-
-  // --- UI Components ---
-  const Field = ({ label, value, onChange, placeholder, type = "text" }) => (
-    <div className="flex flex-col gap-1.5 w-full">
-      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{label}</label>
-      <input 
-        type={type} 
-        value={value} 
-        onChange={e => onChange(e.target.value)} 
-        placeholder={placeholder}
-        className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-      />
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
@@ -214,7 +227,6 @@ export default function App() {
                   {data.sections.map((section, sIdx) => (
                     <div key={section.id} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 relative group animate-in slide-in-from-left-4">
                       
-                      {/* Move Controls */}
                       <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all hidden lg:flex">
                         <button onClick={() => moveSection(sIdx, 'up')} className="p-2 bg-white rounded-lg shadow-sm hover:bg-slate-50 border"><ChevronUp size={16}/></button>
                         <button onClick={() => moveSection(sIdx, 'down')} className="p-2 bg-white rounded-lg shadow-sm hover:bg-slate-50 border"><ChevronDown size={16}/></button>
@@ -229,7 +241,6 @@ export default function App() {
                         <button onClick={() => removeSection(section.id)} className="text-slate-300 hover:text-red-500"><Trash2 size={20}/></button>
                       </div>
 
-                      {/* List Type (Edu, Exp, Proj) */}
                       {section.type === 'list' && (
                         <div className="space-y-6">
                           {section.items.map((item, iIdx) => (
@@ -241,16 +252,20 @@ export default function App() {
                               
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <Field label="Primary Title" value={item.title} onChange={v => {
-                                  const items = [...section.items]; items[iIdx].title = v; updateSection(section.id, { items });
+                                  const items = section.items.map((it, idx) => idx === iIdx ? { ...it, title: v } : it);
+                                  updateSection(section.id, { items });
                                 }} placeholder="e.g. Software Engineer" />
                                 <Field label="Secondary Title" value={item.subtitle} onChange={v => {
-                                  const items = [...section.items]; items[iIdx].subtitle = v; updateSection(section.id, { items });
+                                  const items = section.items.map((it, idx) => idx === iIdx ? { ...it, subtitle: v } : it);
+                                  updateSection(section.id, { items });
                                 }} placeholder="e.g. Google" />
                                 <Field label="Dates" value={item.dates} onChange={v => {
-                                  const items = [...section.items]; items[iIdx].dates = v; updateSection(section.id, { items });
+                                  const items = section.items.map((it, idx) => idx === iIdx ? { ...it, dates: v } : it);
+                                  updateSection(section.id, { items });
                                 }} placeholder="e.g. 2022 - Present" />
                                 <Field label="Link Text" value={item.link} onChange={v => {
-                                  const items = [...section.items]; items[iIdx].link = v; updateSection(section.id, { items });
+                                  const items = section.items.map((it, idx) => idx === iIdx ? { ...it, link: v } : it);
+                                  updateSection(section.id, { items });
                                 }} placeholder="e.g. LINK / CERTIFICATE" />
                               </div>
 
@@ -262,16 +277,23 @@ export default function App() {
                                       className="flex-1 p-3 bg-white border border-slate-200 rounded-xl text-sm h-14 resize-none"
                                       value={p}
                                       onChange={e => {
-                                        const items = [...section.items]; items[iIdx].points[pIdx] = e.target.value; updateSection(section.id, { items });
+                                        const newPoints = [...item.points];
+                                        newPoints[pIdx] = e.target.value;
+                                        const items = section.items.map((it, idx) => idx === iIdx ? { ...it, points: newPoints } : it);
+                                        updateSection(section.id, { items });
                                       }}
                                     />
                                     <button onClick={() => {
-                                      const items = [...section.items]; items[iIdx].points = items[iIdx].points.filter((_, idx) => idx !== pIdx); updateSection(section.id, { items });
+                                      const newPoints = item.points.filter((_, idx) => idx !== pIdx);
+                                      const items = section.items.map((it, idx) => idx === iIdx ? { ...it, points: newPoints } : it);
+                                      updateSection(section.id, { items });
                                     }} className="text-slate-300 hover:text-red-400"><Trash2 size={16}/></button>
                                   </div>
                                 ))}
                                 <button onClick={() => {
-                                  const items = [...section.items]; items[iIdx].points.push(""); updateSection(section.id, { items });
+                                  const newPoints = [...item.points, ""];
+                                  const items = section.items.map((it, idx) => idx === iIdx ? { ...it, points: newPoints } : it);
+                                  updateSection(section.id, { items });
                                 }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest">+ Add Point</button>
                               </div>
                             </div>
@@ -280,31 +302,33 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Skills Type */}
                       {section.type === 'skills' && (
                         <div className="space-y-3">
                           {section.items.map((item, kIdx) => (
                             <div key={kIdx} className="flex gap-3">
                               <input className="w-1/3 p-3 bg-slate-50 border rounded-xl text-sm" placeholder="Label" value={item.label} onChange={e => {
-                                const items = [...section.items]; items[kIdx].label = e.target.value; updateSection(section.id, { items });
+                                const items = section.items.map((it, idx) => idx === kIdx ? { ...it, label: e.target.value } : it);
+                                updateSection(section.id, { items });
                               }} />
                               <input className="flex-1 p-3 bg-slate-50 border rounded-xl text-sm" placeholder="Values" value={item.value} onChange={e => {
-                                const items = [...section.items]; items[kIdx].value = e.target.value; updateSection(section.id, { items });
+                                const items = section.items.map((it, idx) => idx === kIdx ? { ...it, value: e.target.value } : it);
+                                updateSection(section.id, { items });
                               }} />
                               <button onClick={() => {
-                                const items = section.items.filter((_, idx) => idx !== kIdx); updateSection(section.id, { items });
+                                const items = section.items.filter((_, idx) => idx !== kIdx);
+                                updateSection(section.id, { items });
                               }} className="text-slate-300 hover:text-red-400"><Trash2 size={16}/></button>
                             </div>
                           ))}
                           <button onClick={() => {
-                            const items = [...section.items, { label: '', value: '' }]; updateSection(section.id, { items });
+                            const items = [...section.items, { label: '', value: '' }];
+                            updateSection(section.id, { items });
                           }} className="text-blue-600 text-[10px] font-black uppercase tracking-widest">+ Add Skill Category</button>
                         </div>
                       )}
                     </div>
                   ))}
 
-                  {/* Add Global Section */}
                   <div className="bg-slate-900 p-8 rounded-[2rem] text-center space-y-4">
                      <p className="text-slate-500 font-bold text-[10px] tracking-[0.3em]">NEW PARTITION</p>
                      <div className="flex flex-wrap justify-center gap-3">
@@ -350,7 +374,6 @@ export default function App() {
                   </div>
                 </div>
               )}
-
             </div>
           </div>
         )}
@@ -358,8 +381,6 @@ export default function App() {
         {/* --- PREVIEW VIEW --- */}
         {view === 'preview' && (
           <div className="flex flex-col items-center py-10 animate-in zoom-in-95 duration-500">
-             
-             {/* THE ACTUAL RESUME CANVAS */}
              <div 
               id="resume-preview" 
               className="bg-white shadow-2xl w-full max-w-[210mm] min-h-[297mm] p-[15mm] text-black print:shadow-none print:m-0"
@@ -388,7 +409,6 @@ export default function App() {
                 #resume-preview .link-text { color: ${data.themeConfig.accentColor}; font-weight: bold; font-size: 9pt; }
               `}</style>
 
-              {/* Header */}
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h1 className="text-[18pt] font-bold uppercase leading-none mb-1 text-black">{data.personalInfo.name}</h1>
@@ -405,10 +425,9 @@ export default function App() {
 
               <hr className="border-t-[1.5px] border-black mt-2 mb-1" />
 
-              {/* Dynamic Sections Rendering */}
               {data.sections.map(section => (
                 <div key={section.id} className="w-full">
-                  <h2>{section.title}</h2>
+                  <PreviewSectionTitle title={section.title} />
                   
                   {section.type === 'list' && (
                     <div className="space-y-3">
@@ -450,21 +469,12 @@ export default function App() {
 
             <div className="mt-12 mb-24 print:hidden text-center">
               <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors font-bold text-xs mx-auto tracking-widest uppercase">
-                <RotateCcw size={16}/> Need adjustments? Back to Edit
+                <RotateCcw size={16}/> Back to Edit
               </button>
             </div>
-
           </div>
         </div>
       </main>
-
-      {/* Global Print Styles Cleanup */}
-      <style>{`
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      `}</style>
     </div>
   );
 }
