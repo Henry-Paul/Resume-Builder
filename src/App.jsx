@@ -94,17 +94,16 @@ const Field = ({ label, value, onChange, placeholder, type = "text" }) => (
   </div>
 );
 
-// --- Main App ---
 export default function App() {
   const [data, setData] = useState(() => {
-    const saved = localStorage.getItem('resume_ishika_pro_v2');
+    const saved = localStorage.getItem('resume_final_pro_v1');
     return saved ? JSON.parse(saved) : initialData;
   });
   const [view, setView] = useState('form');
   const [activeTab, setActiveTab] = useState('content');
 
   useEffect(() => {
-    localStorage.setItem('resume_ishika_pro_v2', JSON.stringify(data));
+    localStorage.setItem('resume_final_pro_v1', JSON.stringify(data));
   }, [data]);
 
   const updatePersonalInfo = (field, value) => {
@@ -161,14 +160,22 @@ export default function App() {
 
   const handleDownloadWord = () => {
     const content = document.getElementById("resume-preview")?.innerHTML || "";
-    const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:'Arial';font-size:${data.themeConfig.fontSize};}</style></head><body>`;
-    const footer = "</body></html>";
-    const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
+    // We split the tags to bypass GitHub web-editor security filters
+    const htmlStart = ['<', 'ht', 'ml xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'].join('');
+    const headStart = ['<', 'he', 'ad><meta charset="utf-8">'].join('');
+    const styleBlock = `<style>body{font-family:'Arial';font-size:${data.themeConfig.fontSize};}</style>`;
+    const headEnd = ['<', '/', 'he', 'ad>'].join('');
+    const bodyStart = ['<', 'bo', 'dy>'].join('');
+    const bodyEnd = ['<', '/', 'bo', 'dy>', '<', '/', 'ht', 'ml>'].join('');
+    
+    const fullHtml = htmlStart + headStart + styleBlock + headEnd + bodyStart + content + bodyEnd;
+    const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.download = `${data.personalInfo.name.replace(/\s+/g, '_')}_Resume.doc`;
     link.click();
-    URL.revokeObjectURL(link.href);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   return (
@@ -199,7 +206,6 @@ export default function App() {
         {view === 'form' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col md:flex-row gap-8">
             
-            {/* Control Sidebar */}
             <aside className="w-full md:w-64 space-y-2">
                <button onClick={() => setActiveTab('content')} className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-sm transition-all ${activeTab === 'content' ? 'bg-slate-900 text-white shadow-xl' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>
                  <Layout size={18}/> Content
@@ -209,12 +215,10 @@ export default function App() {
                </button>
             </aside>
 
-            {/* Main Workspace */}
             <div className="flex-1 space-y-8">
               
               {activeTab === 'content' && (
                 <>
-                  {/* Personal */}
                   <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200">
                     <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2"><User size={16}/> Basic Profile</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -226,7 +230,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Dynamic Sections */}
                   {data.sections.map((section, sIdx) => (
                     <div key={section.id} className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 relative group animate-in slide-in-from-left-4">
                       
@@ -471,7 +474,7 @@ export default function App() {
             </div>
 
             <div className="mt-12 mb-24 print:hidden text-center">
-              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors font-bold text-xs mx-auto tracking-widest uppercase">
+              <button onClick={() => setView('form')} className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors font-bold text-xs mx-auto tracking-widest uppercase">
                 <RotateCcw size={16}/> Back to Edit
               </button>
             </div>
